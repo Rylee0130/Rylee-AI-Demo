@@ -1,13 +1,216 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>智能周报提醒工具</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智能周报提醒工具</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #f0f2f5; padding: 20px; min-height: 100vh; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 30px; margin-bottom: 20px; color: white; }
+    .header h1 { font-size: 24px; margin-bottom: 8px; }
+    .header p { opacity: 0.9; font-size: 14px; }
+    
+    .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .card-title { color: #1890ff; font-size: 18px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid #e6f7ff; display: flex; align-items: center; gap: 8px; }
+    
+    .summary-text { line-height: 1.8; color: #333; margin-bottom: 12px; }
+    .summary-tip { color: #8c8c8c; font-size: 12px; }
+    
+    .btn-group { display: flex; gap: 8px; margin-top: 16px; }
+    .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+    .btn-primary { background: #1890ff; color: white; }
+    .btn-secondary { background: #f5f5f5; color: #595959; }
+    
+    .decision-item { padding: 12px; background: #fafafa; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid; }
+    .decision-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .decision-title { font-weight: 500; color: #262626; }
+    .decision-tag { font-size: 12px; padding: 2px 8px; border-radius: 4px; }
+    .tag-action { background: #fff1f0; color: #f5222d; }
+    .tag-decision { background: #fffbe6; color: #faad14; }
+    .tag-inform { background: #e6f7ff; color: #1890ff; }
+    .decision-desc { color: #8c8c8c; font-size: 14px; }
+    .ai-summary { background: #fef9e6; padding: 10px; border-radius: 6px; font-size: 13px; color: #ad6800; margin-top: 8px; }
+    
+    .status-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+    .status-box { padding: 16px; border-radius: 8px; text-align: center; }
+    .status-green { background: #f6ffed; }
+    .status-yellow { background: #fffbe6; }
+    .status-red { background: #fff2f0; }
+    .status-emoji { font-size: 24px; margin-bottom: 8px; }
+    .status-label { font-size: 14px; color: #595959; }
+    
+    .project-item { display: flex; align-items: center; padding: 10px; background: #fafafa; border-radius: 6px; margin-bottom: 8px; }
+    .project-name { flex: 1; margin-left: 12px; font-size: 14px; }
+    .project-progress { font-weight: 500; }
+    
+    .team-section { margin-bottom: 16px; }
+    .team-section h4 { font-size: 14px; color: #595959; margin-bottom: 10px; }
+    .member-item { padding: 8px; background: #fafafa; border-radius: 6px; margin-bottom: 6px; font-size: 13px; }
+    
+    .alert-item { padding: 12px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid; }
+    .alert-high { background: #fff2f0; border-color: #f5222d; }
+    .alert-medium { background: #fffbe6; border-color: #faad14; }
+    .alert-low { background: #f6ffed; border-color: #52c41a; }
+    .alert-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .alert-title { font-weight: 500; }
+    .alert-desc { color: #595959; font-size: 13px; }
+    .alert-date { font-size: 12px; color: #8c8c8c; }
+    
+    .footer { text-align: center; color: #8c8c8c; font-size: 12px; margin-top: 30px; padding: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📊 智能周报提醒工具</h1>
+      <p>面向中高层管理者的智能周报系统 | 2026年第21周 (05/19 - 05/25)</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📝 本周总览</div>
+      <p class="summary-text">本周整体业务运行平稳，核心项目进展顺利。最需关注的是Q2产品发布项目延期风险，需协调资源加快进度。下周最大风险来自供应链延迟，建议提前备货。各团队OKR完成度整体良好，但市场团队需要加强。</p>
+      <p class="summary-tip">💡 可直接作为向上级汇报的周报草稿</p>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="copySummary()">📋 一键复制</button>
+        <button class="btn btn-secondary" onclick="exportAsPDF()">📄 导出PDF</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">✅ 我的决策清单 (3项)</div>
+      
+      <div class="decision-item" style="border-left-color: #f5222d;">
+        <div class="decision-header">
+          <span class="decision-title">Q2产品发布项目延期决策</span>
+          <span class="decision-tag tag-action">🔴 需要动作</span>
+        </div>
+        <p class="decision-desc">项目进度落后2周，需要决定是否增加人力投入或调整发布日期</p>
+        <div class="ai-summary">💡 AI建议：建议增加2名开发人员，可在2周内追回进度</div>
+      </div>
+
+      <div class="decision-item" style="border-left-color: #faad14;">
+        <div class="decision-header">
+          <span class="decision-title">年度预算审批</span>
+          <span class="decision-tag tag-decision">🟡 需要决策</span>
+        </div>
+        <p class="decision-desc">市场部提交的年度预算申请待审批，涉及金额500万</p>
+        <div class="ai-summary">💡 AI建议：预算符合预期，建议批准</div>
+      </div>
+
+      <div class="decision-item" style="border-left-color: #1890ff;">
+        <div class="decision-header">
+          <span class="decision-title">Q3战略规划会议通知</span>
+          <span class="decision-tag tag-inform">🔵 知会即可</span>
+        </div>
+        <p class="decision-desc">下周三召开Q3战略规划会议，请提前准备部门汇报材料</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📊 业务与目标健康度</div>
+      
+      <div class="status-grid">
+        <div class="status-box status-green">
+          <div class="status-emoji">🟢</div>
+          <div class="status-label">项目整体状态</div>
+        </div>
+        <div class="status-box status-yellow">
+          <div class="status-emoji">🟡</div>
+          <div class="status-label">OKR健康度</div>
+        </div>
+      </div>
+
+      <h4 style="font-size: 14px; color: #595959; margin-bottom: 10px;">📋 项目进展</h4>
+      <div class="project-item">
+        <span>🟢</span>
+        <span class="project-name">用户增长项目 - 完成核心功能开发</span>
+        <span class="project-progress" style="color: #52c41a;">85%</span>
+      </div>
+      <div class="project-item">
+        <span>🟡</span>
+        <span class="project-name">Q2产品发布 - 修复关键Bug</span>
+        <span class="project-progress" style="color: #faad14;">60%</span>
+      </div>
+      <div class="project-item">
+        <span>🟢</span>
+        <span class="project-name">系统架构升级 - 完成测试</span>
+        <span class="project-progress" style="color: #52c41a;">95%</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">👥 团队动态</div>
+      
+      <div class="team-section">
+        <h4>⭐ 需要1on1</h4>
+        <div class="member-item" style="background: #fffbe6;">张明 - 技术经理 <span style="color: #fa8c16; font-size: 11px;">超过2周</span></div>
+      </div>
+
+      <div class="team-section">
+        <h4>人事动态</h4>
+        <div class="member-item" style="background: #f6ffed; color: #52c41a;">➕ 入职: 李华 - 高级工程师</div>
+        <div class="member-item" style="background: #fff2f0; color: #ff4d4f;">➖ 离职: 王芳 - 产品经理</div>
+      </div>
+
+      <div class="team-section">
+        <h4>💼 招聘进展</h4>
+        <div class="member-item">后端开发工程师: 8位候选人</div>
+        <div class="member-item">前端开发工程师: 5位候选人</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔭 下周预警 (3项)</div>
+      
+      <div class="alert-item alert-high">
+        <div class="alert-header">
+          <span style="color: #f5222d;">🔴高</span>
+          <span class="alert-title">Q2产品发布截止日期</span>
+        </div>
+        <p class="alert-desc">距离发布日期仅剩5个工作日，当前进度60%，存在延期风险</p>
+        <div class="alert-date">📅 2026-05-30</div>
+      </div>
+
+      <div class="alert-item alert-medium">
+        <div class="alert-header">
+          <span style="color: #faad14;">🟡中</span>
+          <span class="alert-title">季度OKR评审会议</span>
+        </div>
+        <p class="alert-desc">需要准备各团队Q2 OKR进展汇报材料</p>
+        <div class="alert-date">📅 2026-05-28</div>
+      </div>
+
+      <div class="alert-item alert-low">
+        <div class="alert-header">
+          <span style="color: #52c41a;">🟢低</span>
+          <span class="alert-title">团队团建活动</span>
+        </div>
+        <p class="alert-desc">下周五组织团队户外团建，请提前安排工作</p>
+        <div class="alert-date">📅 2026-06-01</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>本周报由智能周报提醒工具自动生成</p>
+      <p>生成时间: 2026-05-26 10:30:00</p>
+    </div>
+  </div>
+
+  <script>
+    function copySummary() {
+      const summary = '本周整体业务运行平稳，核心项目进展顺利。最需关注的是Q2产品发布项目延期风险，需协调资源加快进度。下周最大风险来自供应链延迟，建议提前备货。';
+      navigator.clipboard.writeText(summary).then(() => {
+        alert('已复制到剪贴板！');
+      });
+    }
+
+    function exportAsPDF() {
+      window.print();
+      alert('打印窗口已打开，请选择"另存为PDF"保存。');
+    }
+  </script>
+</body>
 </html>
