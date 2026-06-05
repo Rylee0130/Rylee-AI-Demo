@@ -1,14 +1,249 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>智能周报提醒工具</title>
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <script type="module" crossorigin src="/Rylee-AI-Demo/assets/index-DEek3bBw.js"></script>
-    <link rel="stylesheet" crossorigin href="/Rylee-AI-Demo/assets/index-B28LdN-3.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智能周报提醒工具</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #f0f2f5; padding: 20px; min-height: 100vh; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    
+    /* Header */
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 30px; margin-bottom: 20px; color: white; }
+    .header h1 { font-size: 24px; margin-bottom: 8px; }
+    .header p { opacity: 0.9; font-size: 14px; }
+    
+    /* Card */
+    .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .card-title { color: #1890ff; font-size: 18px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid #e6f7ff; display: flex; align-items: center; gap: 8px; }
+    
+    /* Summary */
+    .summary-text { line-height: 1.8; color: #333; margin-bottom: 12px; }
+    .summary-tip { color: #8c8c8c; font-size: 12px; }
+    
+    /* Button Group */
+    .btn-group { display: flex; gap: 8px; margin-top: 16px; }
+    .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+    .btn-primary { background: #1890ff; color: white; }
+    .btn-secondary { background: #f5f5f5; color: #595959; }
+    
+    /* Decision List */
+    .decision-item { padding: 12px; background: #fafafa; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid #1890ff; }
+    .decision-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .decision-title { font-weight: 500; color: #262626; }
+    .decision-tag { font-size: 12px; padding: 2px 8px; border-radius: 4px; }
+    .tag-action { background: #fff1f0; color: #f5222d; }
+    .tag-decision { background: #fffbe6; color: #faad14; }
+    .tag-inform { background: #e6f7ff; color: #1890ff; }
+    .decision-desc { color: #8c8c8c; font-size: 14px; }
+    .ai-summary { background: #fef9e6; padding: 10px; border-radius: 6px; font-size: 13px; color: #ad6800; margin-top: 8px; }
+    
+    /* Health Status */
+    .status-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+    .status-box { padding: 16px; border-radius: 8px; text-align: center; }
+    .status-green { background: #f6ffed; }
+    .status-yellow { background: #fffbe6; }
+    .status-red { background: #fff2f0; }
+    .status-emoji { font-size: 24px; margin-bottom: 8px; }
+    .status-label { font-size: 14px; color: #595959; }
+    
+    /* Progress Bar */
+    .progress-bar { height: 6px; background: #e8e8e8; border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 3px; }
+    
+    /* Project Item */
+    .project-item { padding: 12px; background: #fafafa; border-radius: 8px; margin-bottom: 12px; }
+    .project-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .project-name { font-weight: 500; color: #262626; }
+    .project-progress { color: #1890ff; font-weight: 500; }
+    
+    /* Alert */
+    .alert-item { padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+    .alert-high { background: #fff2f0; border-left: 4px solid #f5222d; }
+    .alert-medium { background: #fffbe6; border-left: 4px solid #faad14; }
+    .alert-low { background: #f6ffed; border-left: 4px solid #52c41a; }
+    .alert-title { font-weight: 500; color: #262626; margin-bottom: 4px; }
+    .alert-desc { color: #8c8c8c; font-size: 14px; }
+    
+    /* Switch */
+    .switch { position: relative; display: inline-block; width: 48px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: #1890ff; }
+    input:checked + .slider:before { transform: translateX(24px); }
+    
+    /* Config Panel */
+    .config-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .config-section { background: #fafafa; padding: 16px; border-radius: 8px; }
+    .config-section h4 { font-size: 14px; color: #595959; margin-bottom: 12px; }
+    .config-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .select-box { padding: 6px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; }
+    .save-btn { padding: 10px; background: #1890ff; color: white; border: none; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 12px; }
+    
+    /* Toast */
+    .toast { position: fixed; top: 20px; right: 20px; background: #52c41a; color: white; padding: 12px 24px; border-radius: 8px; z-index: 1000; animation: slideIn 0.3s; }
+    @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    
+    @media (max-width: 768px) {
+      .config-panel { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📊 智能周报提醒工具</h1>
+      <p>面向中高层管理者（总监/VP）的智能周报系统</p>
+    </div>
+    
+    <div class="card">
+      <div class="card-title">📝 本周总览</div>
+      <p class="summary-text" id="summary-text">本周整体业务运行平稳，核心项目进展顺利。最需关注的是Q2产品发布项目延期风险，需协调资源加快进度。下周最大风险来自供应链延迟，建议提前备货。各团队OKR完成度整体良好，但市场团队需要加强。</p>
+      <p class="summary-tip">💡 可直接作为向上级汇报的周报草稿</p>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="copySummary()">📋 一键复制</button>
+        <button class="btn btn-secondary" onclick="exportPDF()">📄 导出PDF</button>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-title">✅ 我的决策清单</div>
+      <div class="decision-item" style="border-left-color: #f5222d;">
+        <div class="decision-header">
+          <span class="decision-title">Q2产品发布项目延期决策</span>
+          <span class="decision-tag tag-action">🔴 需要动作</span>
+        </div>
+        <p class="decision-desc">项目进度落后2周，需要决定是否增加人力投入或调整发布日期</p>
+        <div class="ai-summary">💡 AI建议：建议增加2名开发人员，可在2周内追回进度</div>
+      </div>
+      <div class="decision-item" style="border-left-color: #faad14;">
+        <div class="decision-header">
+          <span class="decision-title">年度预算审批</span>
+          <span class="decision-tag tag-decision">🟡 需要决策</span>
+        </div>
+        <p class="decision-desc">市场部提交的年度预算申请待审批，涉及金额500万</p>
+        <div class="ai-summary">💡 AI建议：预算符合预期，建议批准</div>
+      </div>
+      <div class="decision-item" style="border-left-color: #1890ff;">
+        <div class="decision-header">
+          <span class="decision-title">Q3战略规划会议通知</span>
+          <span class="decision-tag tag-inform">🔵 知会即可</span>
+        </div>
+        <p class="decision-desc">下周三召开Q3战略规划会议，请提前准备部门汇报材料</p>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-title">📊 业务健康度</div>
+      <div class="status-grid">
+        <div class="status-box status-green">
+          <div class="status-emoji">🟢</div>
+          <div class="status-label">项目整体状态</div>
+        </div>
+        <div class="status-box status-yellow">
+          <div class="status-emoji">🟡</div>
+          <div class="status-label">OKR健康度</div>
+        </div>
+      </div>
+      <div style="margin-top: 20px;">
+        <h4 style="font-size: 14px; color: #595959; margin-bottom: 12px;">📋 项目进展</h4>
+        <div class="project-item">
+          <div class="project-header">
+            <span class="project-name">🟢 用户增长项目</span>
+            <span class="project-progress">85%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width: 85%; background: #52c41a;"></div></div>
+          <p style="font-size: 12px; color: #8c8c8c; margin-top: 4px;">完成核心功能开发</p>
+        </div>
+        <div class="project-item">
+          <div class="project-header">
+            <span class="project-name">🟡 Q2产品发布</span>
+            <span class="project-progress">60%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width: 60%; background: #faad14;"></div></div>
+          <p style="font-size: 12px; color: #8c8c8c; margin-top: 4px;">修复关键Bug</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-title">🔭 下周预警</div>
+      <div class="alert-item alert-high">
+        <div class="alert-title">🔴 高 - Q2产品发布截止日期</div>
+        <p class="alert-desc">距离发布日期仅剩5个工作日，当前进度60%，存在延期风险</p>
+      </div>
+      <div class="alert-item alert-medium">
+        <div class="alert-title">🟡 中 - 季度OKR评审会议</div>
+        <p class="alert-desc">需要准备各团队Q2 OKR进展汇报材料</p>
+      </div>
+      <div class="alert-item alert-low">
+        <div class="alert-title">🟢 低 - 团队团建活动</div>
+        <p class="alert-desc">下周五组织团队户外团建，请提前安排工作</p>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-title">⚙️ 设置面板</div>
+      <div class="config-panel">
+        <div class="config-section">
+          <h4>通知设置</h4>
+          <div class="config-row">
+            <span>启用周报提醒</span>
+            <label class="switch"><input type="checkbox" checked /><span class="slider"></span></label>
+          </div>
+          <div class="config-row">
+            <span>提醒频率</span>
+            <select class="select-box">
+              <option>1次/周</option>
+              <option>2次/周</option>
+              <option>3次/周</option>
+            </select>
+          </div>
+        </div>
+        <div class="config-section">
+          <h4>发送时间</h4>
+          <div class="config-row">
+            <span>周报发送时间</span>
+            <select class="select-box">
+              <option>09:00</option>
+              <option>10:00</option>
+              <option>14:00</option>
+              <option>15:00</option>
+            </select>
+          </div>
+          <p style="font-size: 12px; color: #52c41a; margin-top: 8px;">✅ 周报将在每周五 09:00 自动生成并发送</p>
+        </div>
+      </div>
+      <button class="save-btn" onclick="saveConfig()">💾 保存配置</button>
+    </div>
+  </div>
+
+  <script>
+    function copySummary() {
+      const text = document.getElementById('summary-text').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('已复制到剪贴板！');
+      });
+    }
+    
+    function exportPDF() {
+      window.print();
+      showToast('打印窗口已打开，请选择"另存为PDF"保存。');
+    }
+    
+    function saveConfig() {
+      showToast('配置已保存！');
+    }
+    
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+  </script>
+</body>
 </html>
