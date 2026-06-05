@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智能周报提醒工具 - 后台管理</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #f0f2f5; min-height: 100vh; }
+    #root { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 24px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .header h1 { font-size: 24px; margin-bottom: 8px; font-weight: 600; }
+    .header p { opacity: 0.9; font-size: 14px; }
+    .header select {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .header select option { color: #333; }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .card-title {
+      color: #1890ff;
+      font-size: 18px;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e6f7ff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .summary-text { line-height: 1.8; color: #333; font-size: 15px; }
+    .summary-tip { color: #8c8c8c; font-size: 13px; margin-top: 12px; }
+    .btn-group { display: flex; gap: 8px; margin-top: 16px; }
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-primary { background: #1890ff; color: white; }
+    .btn-secondary { background: #f5f5f5; color: #595959; }
+    .btn-success { background: #52c41a; color: white; }
+
+    .content-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+    .decision-item {
+      padding: 16px;
+      background: #fafafa;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      border-left: 4px solid;
+      transition: all 0.2s;
+    }
+    .decision-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .decision-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .decision-title { font-weight: 500; color: #262626; }
+    .decision-tag { font-size: 12px; padding: 2px 8px; border-radius: 4px; }
+    .decision-desc { color: #595959; font-size: 14px; margin-bottom: 10px; }
+    .ai-summary { background: #fef9e6; padding: 10px; border-radius: 6px; font-size: 13px; color: #ad6800; }
+
+    .status-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+    .status-box { padding: 16px; border-radius: 8px; text-align: center; transition: transform 0.2s; }
+    .status-box:hover { transform: scale(1.02); }
+    .status-green { background: #f6ffed; }
+    .status-yellow { background: #fffbe6; }
+    .status-red { background: #fff2f0; }
+    .status-emoji { font-size: 28px; margin-bottom: 8px; }
+    .status-label { font-size: 14px; color: #595959; }
+
+    .project-item { padding: 12px; background: #fafafa; border-radius: 8px; margin-bottom: 12px; }
+    .project-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .project-name { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #262626; }
+    .project-progress { font-weight: 500; }
+    .progress-bar { height: 6px; background: #e8e8e8; border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+    .project-desc { font-size: 12px; color: #8c8c8c; margin-top: 4px; }
+
+    .okr-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .okr-info { flex: 1; }
+    .okr-title { font-size: 13px; color: #262626; margin-bottom: 4px; }
+    .okr-percent { font-weight: 500; font-size: 13px; }
+
+    .team-section { margin-bottom: 20px; }
+    .team-section h4 { font-size: 14px; color: #595959; margin-bottom: 10px; }
+    .member-item {
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s;
+    }
+    .member-item:hover { transform: translateX(4px); }
+
+    .alert-item {
+      padding: 14px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      border-left: 4px solid;
+      transition: all 0.2s;
+    }
+    .alert-item:hover { transform: translateX(4px); }
+    .alert-high { background: #fff2f0; border-color: #f5222d; }
+    .alert-medium { background: #fffbe6; border-color: #faad14; }
+    .alert-low { background: #f6ffed; border-color: #52c41a; }
+    .alert-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .alert-title { font-weight: 500; }
+    .alert-desc { color: #595959; font-size: 13px; }
+    .alert-date { font-size: 12px; color: #8c8c8c; }
+
+    .config-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .config-section { background: #fafafa; padding: 20px; border-radius: 8px; }
+    .config-section h4 { font-size: 14px; color: #595959; margin-bottom: 16px; }
+    .config-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .config-row span { font-size: 14px; }
+    .slider-container { margin-top: 12px; }
+    .slider-track { height: 6px; background: #e8e8e8; border-radius: 3px; position: relative; cursor: pointer; }
+    .slider-fill { height: 100%; background: #1890ff; border-radius: 3px; }
+    .slider-thumb {
+      position: absolute;
+      top: 50%;
+      width: 16px;
+      height: 16px;
+      background: #1890ff;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .select-box {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .config-tip {
+      padding: 12px;
+      background: #f6ffed;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #52c41a;
+    }
+    .config-save-btn {
+      padding: 10px 20px;
+      background: #1890ff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 16px;
+      width: 100%;
+    }
+    .config-save-btn:hover { opacity: 0.9; }
+
+    .preview-btn {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      z-index: 1000;
+      padding: 14px 28px;
+      background: #1890ff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+      box-shadow: 0 4px 16px rgba(24, 144, 255, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .preview-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(24, 144, 255, 0.4); }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      animation: fadeIn 0.2s;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    .modal-content {
+      background: #f5f5f5;
+      width: 800px;
+      max-height: 90vh;
+      overflow-y: auto;
+      border-radius: 12px;
+      padding: 24px;
+      animation: slideUp 0.2s;
+    }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #8c8c8c;
+      padding: 0 8px;
+    }
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .loading-container { text-align: center; padding: 100px; }
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f0f0f0;
+      border-top-color: #1890ff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .success-toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #52c41a;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      z-index: 3000;
+      animation: slideIn 0.3s;
+    }
+    @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* Switch styles */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #1890ff;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+
+    @media (max-width: 900px) {
+      .content-layout { grid-template-columns: 1fr; }
+      .config-panel { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>正在加载后台管理系统...</p>
+    </div>
+  </div>
+
+  <script>
+    const reports = {
+      director: {
+        weekNumber: 21,
+        weekStart: '2026-05-19',
+        weekEnd: '2026-05-25',
+        userName: '张明',
+        userTitle: '技术总监',
+        summary: '本周整体业务运行平稳，核心项目进展顺利。最需关注的是Q2产品发布项目延期风险，需协调资源加快进度。下周最大风险来自供应链延迟，建议提前备货。各团队OKR完成度整体良好，但市场团队需要加强。',
+        decisions: [
+          { id: 'd1', title: 'Q2产品发布项目延期决策', description: '项目进度落后2周，需要决定是否增加人力投入或调整发布日期', type: 'action', aiSuggestion: '建议增加2名开发人员，可在2周内追回进度' },
+          { id: 'd2', title: '年度预算审批', description: '市场部提交的年度预算申请待审批，涉及金额500万', type: 'decision', aiSuggestion: '预算符合预期，建议批准' },
+          { id: 'd3', title: 'Q3战略规划会议通知', description: '下周三召开Q3战略规划会议，请提前准备部门汇报材料', type: 'inform' },
+        ],
+        projects: [
+          { id: 'p1', name: '用户增长项目', status: 'green', progress: 85, description: '完成核心功能开发' },
+          { id: 'p2', name: 'Q2产品发布', status: 'yellow', progress: 60, description: '修复关键Bug' },
+          { id: 'p3', name: '系统架构升级', status: 'green', progress: 95, description: '完成测试' },
+        ],
+        okrs: [
+          { id: 'o1', title: '用户增长目标', progress: 75, status: 'yellow' },
+          { id: 'o2', title: '产品发布准时率', progress: 65, status: 'yellow' },
+          { id: 'o3', title: '团队效能提升', progress: 85, status: 'green' },
+        ],
+        teamMembers: [
+          { id: 'm1', name: '张明', role: '技术经理', status: 'active', oneOnOneDays: 15 },
+          { id: 'm2', name: '李华', role: '高级工程师', status: 'new' },
+          { id: 'm3', name: '王芳', role: '产品经理', status: 'leaving' },
+        ],
+        hiringPositions: [
+          { id: 'h1', title: '后端开发工程师', candidates: 8 },
+          { id: 'h2', title: '前端开发工程师', candidates: 5 },
+        ],
+        alerts: [
+          { id: 'a1', title: 'Q2产品发布截止日期', description: '距离发布日期仅剩5个工作日，当前进度60%，存在延期风险', priority: 'high', date: '2026-05-30' },
+          { id: 'a2', title: '季度OKR评审会议', description: '需要准备各团队Q2 OKR进展汇报材料', priority: 'medium', date: '2026-05-28' },
+          { id: 'a3', title: '团队团建活动', description: '下周五组织团队户外团建，请提前安排工作', priority: 'low', date: '2026-06-01' },
+        ],
+      },
+      vp: {
+        weekNumber: 21,
+        weekStart: '2026-05-19',
+        weekEnd: '2026-05-25',
+        userName: '李强',
+        userTitle: 'VP of Engineering',
+        summary: '本周集团整体运营情况良好，各事业部业绩稳步增长。需要重点关注Q2产品发布延期风险及供应链问题。建议成立专项小组解决关键瓶颈。各部门OKR完成度整体达标，但需要关注创新业务线的投入产出比。',
+        decisions: [
+          { id: 'd1', title: 'Q2产品发布战略调整', description: '核心产品发布延期2周，需要决定是否调整发布策略或增加资源投入', type: 'action', aiSuggestion: '建议启动应急预案，增加跨部门协调力度' },
+          { id: 'd2', title: '创新业务线预算调整', description: '创新业务线ROI未达预期，需要评估是否继续投入', type: 'decision', aiSuggestion: '建议进行全面评估后再做决策' },
+          { id: 'd3', title: '季度董事会汇报准备', description: '下月初需要向董事会汇报Q2业绩，请各部门准备材料', type: 'inform' },
+        ],
+        projects: [
+          { id: 'p1', name: '数字化转型项目', status: 'green', progress: 70, description: '完成一期建设' },
+          { id: 'p2', name: 'Q2产品矩阵发布', status: 'yellow', progress: 55, description: '多个产品并行开发' },
+          { id: 'p3', name: '海外市场拓展', status: 'green', progress: 80, description: '进入东南亚市场' },
+        ],
+        okrs: [
+          { id: 'o1', title: '年度营收目标', progress: 45, status: 'yellow' },
+          { id: 'o2', title: '利润率提升', progress: 60, status: 'yellow' },
+          { id: 'o3', title: '组织效能优化', progress: 75, status: 'green' },
+        ],
+        teamMembers: [
+          { id: 'm1', name: '张明', role: '技术总监', status: 'active', oneOnOneDays: 20 },
+          { id: 'm2', name: '李华', role: '产品总监', status: 'active', oneOnOneDays: 10 },
+          { id: 'm3', name: '王芳', role: '市场总监', status: 'active', oneOnOneDays: 5 },
+        ],
+        hiringPositions: [
+          { id: 'h1', title: '事业部总经理', candidates: 3 },
+          { id: 'h2', title: '高级产品经理', candidates: 6 },
+          { id: 'h3', title: '数据科学家', candidates: 4 },
+        ],
+        alerts: [
+          { id: 'a1', title: 'Q2产品发布截止', description: '距离发布日期仅剩5个工作日，进度落后', priority: 'high', date: '2026-05-30' },
+          { id: 'a2', title: '供应链风险预警', description: '关键零部件供应商交付延迟，可能影响生产', priority: 'high', date: '2026-05-27' },
+          { id: 'a3', title: '季度董事会', description: '准备Q2业绩汇报材料', priority: 'medium', date: '2026-06-05' },
+        ],
+      },
+      ceo: {
+        weekNumber: 21,
+        weekStart: '2026-05-19',
+        weekEnd: '2026-05-25',
+        userName: '王芳',
+        userTitle: 'CEO',
+        summary: '本周公司整体运营稳健，各项关键指标符合预期。需要关注的重点是Q2产品发布延期风险和供应链稳定性问题。建议加强风险管理和跨部门协调。中长期来看，需要加速数字化转型和国际化布局。',
+        decisions: [
+          { id: 'd1', title: 'Q2产品发布最终决策', description: '核心产品发布面临延期风险，需要CEO最终决策发布策略', type: 'decision', aiSuggestion: '建议保持原发布日期，同时启动应急方案' },
+          { id: 'd2', title: '战略投资决策', description: '收到多个潜在收购标的，需要评估投资机会', type: 'decision', aiSuggestion: '建议优先评估与核心业务协同的标的' },
+          { id: 'd3', title: '年度战略规划更新', description: '根据市场变化，需要更新年度战略规划', type: 'inform' },
+        ],
+        projects: [
+          { id: 'p1', name: '数字化转型', status: 'green', progress: 65, description: '集团级数字化建设' },
+          { id: 'p2', name: 'Q2产品发布', status: 'yellow', progress: 55, description: '旗舰产品发布' },
+          { id: 'p3', name: '国际化扩张', status: 'green', progress: 70, description: '进入新市场' },
+          { id: 'p4', name: '组织变革', status: 'yellow', progress: 40, description: '优化组织架构' },
+        ],
+        okrs: [
+          { id: 'o1', title: '公司市值目标', progress: 50, status: 'yellow' },
+          { id: 'o2', title: '客户满意度', progress: 80, status: 'green' },
+          { id: 'o3', title: '创新能力提升', progress: 65, status: 'yellow' },
+        ],
+        teamMembers: [
+          { id: 'm1', name: '李强', role: 'VP of Engineering', status: 'active', oneOnOneDays: 25 },
+          { id: 'm2', name: '赵雪', role: 'CFO', status: 'active', oneOnOneDays: 15 },
+          { id: 'm3', name: '孙磊', role: 'COO', status: 'active', oneOnOneDays: 20 },
+        ],
+        hiringPositions: [
+          { id: 'h1', title: 'CTO', candidates: 2 },
+          { id: 'h2', title: 'CFO', candidates: 4 },
+        ],
+        alerts: [
+          { id: 'a1', title: 'Q2产品发布截止', description: '旗舰产品发布倒计时，存在延期风险', priority: 'high', date: '2026-05-30' },
+          { id: 'a2', title: '供应链危机', description: '全球供应链紧张，可能影响Q3交付', priority: 'high', date: '2026-06-01' },
+          { id: 'a3', title: '年度股东大会', description: '准备年度股东大会材料', priority: 'medium', date: '2026-06-15' },
+        ],
+      },
+    };
+
+    let currentRole = 'director';
+    let config = {
+      reminderEnabled: true,
+      reminderFrequency: 1,
+      sendTime: '09:00'
+    };
+
+    function loadConfig() {
+      const saved = localStorage.getItem('weeklyReportConfig');
+      if (saved) {
+        config = JSON.parse(saved);
+      }
+    }
+
+    function saveConfig() {
+      localStorage.setItem('weeklyReportConfig', JSON.stringify(config));
+      showToast('配置已保存！');
+    }
+
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'success-toast';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    function getStatusColor(status) {
+      const colors = { green: '#52c41a', yellow: '#faad14', red: '#f5222d' };
+      return colors[status] || colors.green;
+    }
+
+    function getPriorityConfig(priority) {
+      const config = {
+        high: { color: '#f5222d', bgColor: '#fff2f0', borderColor: '#f5222d', text: '高', emoji: '🔴' },
+        medium: { color: '#faad14', bgColor: '#fffbe6', borderColor: '#faad14', text: '中', emoji: '🟡' },
+        low: { color: '#52c41a', bgColor: '#f6ffed', borderColor: '#52c41a', text: '低', emoji: '🟢' },
+      };
+      return config[priority];
+    }
+
+    function getTypeConfig(type) {
+      const config = {
+        action: { color: '#f5222d', bgColor: '#fff1f0', text: '需要动作', emoji: '🔴' },
+        decision: { color: '#faad14', bgColor: '#fffbe6', text: '需要决策', emoji: '🟡' },
+        inform: { color: '#1890ff', bgColor: '#e6f7ff', text: '知会即可', emoji: '🔵' },
+      };
+      return config[type];
+    }
+
+    function getStatusEmoji(status) {
+      const emojis = { green: '🟢', yellow: '🟡', red: '🔴' };
+      return emojis[status] || '🟢';
+    }
+
+    function renderHeader(report) {
+      return `
+        <header class="header">
+          <div>
+            <h1>📊 智能周报提醒工具</h1>
+            <p>${report.userName} | ${report.userTitle} | 2026年第${report.weekNumber}周 (${report.weekStart} - ${report.weekEnd})</p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 14px; opacity: 0.9;">角色:</span>
+            <select id="role-select">
+              <option value="director" ${currentRole === 'director' ? 'selected' : ''}>总监</option>
+              <option value="vp" ${currentRole === 'vp' ? 'selected' : ''}>VP</option>
+              <option value="ceo" ${currentRole === 'ceo' ? 'selected' : ''}>CEO</option>
+            </select>
+          </div>
+        </header>
+      `;
+    }
+
+    function renderWeeklySummary(report) {
+      return `
+        <div class="card">
+          <div class="card-title">
+            <span>📝</span>
+            <span>本周总览</span>
+          </div>
+          <p class="summary-text" id="summary-text">${report.summary}</p>
+          <p class="summary-tip">💡 可直接作为向上级汇报的周报草稿</p>
+          <div class="btn-group">
+            <button class="btn btn-primary" id="copy-btn">📋 一键复制</button>
+            <button class="btn btn-secondary" id="pdf-btn">📄 导出PDF</button>
+            <button class="btn btn-secondary" id="image-btn">🖼️ 导出图片</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDecisionList(report) {
+      const decisions = report.decisions.map(d => {
+        const config = getTypeConfig(d.type);
+        return `
+          <div class="decision-item" style="border-left-color: ${config.color}">
+            <div class="decision-header">
+              <span class="decision-title">${d.title}</span>
+              <span class="decision-tag" style="background: ${config.bgColor}; color: ${config.color}">${config.emoji} ${config.text}</span>
+            </div>
+            <p class="decision-desc">${d.description}</p>
+            ${d.aiSuggestion ? `<div class="ai-summary">💡 AI建议：${d.aiSuggestion}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="card">
+          <div class="card-title">
+            <span>✅</span>
+            <span>我的决策清单 (${report.decisions.length}项)</span>
+          </div>
+          ${decisions}
+        </div>
+      `;
+    }
+
+    function renderBusinessHealth(report) {
+      const overallStatus = report.okrs.filter(o => o.status === 'green').length > report.okrs.filter(o => o.status === 'red').length ? 'green' : 'yellow';
+      const okrStatus = report.okrs.filter(o => o.status === 'green').length >= report.okrs.length * 0.6 ? 'green' : 'yellow';
+
+      const projects = report.projects.map(p => {
+        const color = getStatusColor(p.status);
+        return `
+          <div class="project-item">
+            <div class="project-header">
+              <span class="project-name">
+                <span>${getStatusEmoji(p.status)}</span>
+                ${p.name}
+              </span>
+              <span class="project-progress" style="color: ${color}">${p.progress}%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${p.progress}%; background: ${color}"></div>
+            </div>
+            <p class="project-desc">${p.description}</p>
+          </div>
+        `;
+      }).join('');
+
+      const okrs = report.okrs.map(o => {
+        const color = getStatusColor(o.status);
+        return `
+          <div class="okr-item">
+            <span>${getStatusEmoji(o.status)}</span>
+            <div class="okr-info">
+              <div class="okr-title">${o.title}</div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${o.progress}%; background: ${color}"></div>
+              </div>
+            </div>
+            <span class="okr-percent" style="color: ${color}">${o.progress}%</span>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="card">
+          <div class="card-title">
+            <span>📊</span>
+            <span>业务与目标健康度</span>
+          </div>
+          <div class="status-grid">
+            <div class="status-box ${overallStatus === 'green' ? 'status-green' : overallStatus === 'yellow' ? 'status-yellow' : 'status-red'}">
+              <div class="status-emoji">${getStatusEmoji(overallStatus)}</div>
+              <div class="status-label">项目整体状态</div>
+            </div>
+            <div class="status-box ${okrStatus === 'green' ? 'status-green' : okrStatus === 'yellow' ? 'status-yellow' : 'status-red'}">
+              <div class="status-emoji">${getStatusEmoji(okrStatus)}</div>
+              <div class="status-label">OKR健康度</div>
+            </div>
+          </div>
+          <h4 style="font-size: 14px; color: #595959; margin-bottom: 12px; margin-top: 20px;">📋 项目进展</h4>
+          ${projects}
+          <h4 style="font-size: 14px; color: #595959; margin-bottom: 12px; margin-top: 20px;">🎯 OKR进度</h4>
+          ${okrs}
+        </div>
+      `;
+    }
+
+    function renderTeamDynamics(report) {
+      const needOneOnOne = report.teamMembers.filter(m => m.oneOnOneDays && m.oneOnOneDays > 7);
+      const newMembers = report.teamMembers.filter(m => m.status === 'new');
+      const leavingMembers = report.teamMembers.filter(m => m.status === 'leaving');
+
+      let html = '';
+
+      if (needOneOnOne.length > 0) {
+        const members = needOneOnOne.map(m => `
+          <div class="member-item" style="background: #fffbe6;">
+            <span>${m.name} - ${m.role}</span>
+            <span style="color: #fa8c16; font-size: 11px;">超过${m.oneOnOneDays}天</span>
+          </div>
+        `).join('');
+        html += `<div class="team-section"><h4>⭐ 需要1on1</h4>${members}</div>`;
+      }
+
+      if (newMembers.length > 0 || leavingMembers.length > 0) {
+        const members = [...newMembers.map(m => `<div class="member-item" style="background: #f6ffed; color: #52c41a;">➕ 入职: ${m.name} - ${m.role}</div>`),
+                         ...leavingMembers.map(m => `<div class="member-item" style="background: #fff2f0; color: #ff4d4f;">➖ 离职: ${m.name} - ${m.role}</div>`)].join('');
+        html += `<div class="team-section"><h4>人事动态</h4>${members}</div>`;
+      }
+
+      if (report.hiringPositions.length > 0) {
+        const positions = report.hiringPositions.map(p => `
+          <div class="member-item" style="background: #fafafa;">
+            <span>${p.title}</span>
+            <span style="color: #1890ff; font-weight: 500;">${p.candidates}位候选人</span>
+          </div>
+        `).join('');
+        html += `<div class="team-section"><h4>💼 招聘进展</h4>${positions}</div>`;
+      }
+
+      return `
+        <div class="card">
+          <div class="card-title">
+            <span>👥</span>
+            <span>团队动态</span>
+          </div>
+          ${html}
+        </div>
+      `;
+    }
+
+    function renderNextWeekAlert(report) {
+      const sortedAlerts = [...report.alerts].sort((a, b) => {
+        const order = { high: 0, medium: 1, low: 2 };
+        return order[a.priority] - order[b.priority];
+      });
+
+      const alerts = sortedAlerts.map(a => {
+        const config = getPriorityConfig(a.priority);
+        return `
+          <div class="alert-item ${`alert-${a.priority}`}" style="border-color: ${config.borderColor}; background: ${config.bgColor}">
+            <div class="alert-header">
+              <span style="color: ${config.color}; font-weight: 500;">${config.emoji}${config.text}</span>
+              <span class="alert-title">${a.title}</span>
+            </div>
+            <p class="alert-desc">${a.description}</p>
+            <div class="alert-date">📅 ${a.date}</div>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="card">
+          <div class="card-title">
+            <span>🔭</span>
+            <span>下周预警 (${report.alerts.length}项)</span>
+          </div>
+          ${alerts}
+        </div>
+      `;
+    }
+
+    function renderConfigPanel() {
+      return `
+        <div class="card" style="margin-top: 24px;">
+          <div class="card-title">
+            <span>⚙️</span>
+            <span>设置面板</span>
+          </div>
+          <div class="config-panel">
+            <div class="config-section">
+              <h4>通知设置</h4>
+              <div class="config-row">
+                <span>启用周报提醒</span>
+                <label class="switch">
+                  <input type="checkbox" id="reminder-toggle" ${config.reminderEnabled ? 'checked' : ''} />
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div>
+                <div class="config-row">
+                  <span>提醒频率</span>
+                  <span style="color: #1890ff;" id="frequency-display">${config.reminderFrequency} 次/周</span>
+                </div>
+                <div class="slider-container">
+                  <div class="slider-track" id="frequency-slider">
+                    <div class="slider-fill" id="frequency-fill" style="width: ${config.reminderFrequency * 25}%"></div>
+                    <div class="slider-thumb" id="frequency-thumb" style="left: ${config.reminderFrequency * 25}%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="config-section">
+              <h4>发送时间</h4>
+              <div>
+                <label style="font-size: 14px; display: block; margin-bottom: 8px;">周报发送时间</label>
+                <select class="select-box" id="send-time-select">
+                  <option value="08:00" ${config.sendTime === '08:00' ? 'selected' : ''}>08:00</option>
+                  <option value="09:00" ${config.sendTime === '09:00' ? 'selected' : ''}>09:00</option>
+                  <option value="10:00" ${config.sendTime === '10:00' ? 'selected' : ''}>10:00</option>
+                  <option value="14:00" ${config.sendTime === '14:00' ? 'selected' : ''}>14:00</option>
+                  <option value="15:00" ${config.sendTime === '15:00' ? 'selected' : ''}>15:00</option>
+                </select>
+              </div>
+              <div class="config-tip" id="send-time-tip">✅ 周报将在每周五 ${config.sendTime} 自动生成并发送</div>
+            </div>
+          </div>
+          <button class="config-save-btn" id="save-config-btn">💾 保存配置</button>
+        </div>
+      `;
+    }
+
+    function setupEventListeners() {
+      // 角色选择
+      const roleSelect = document.getElementById('role-select');
+      if (roleSelect) {
+        roleSelect.addEventListener('change', function(e) {
+          changeRole(e.target.value);
+        });
+      }
+
+      // 提醒开关
+      const reminderToggle = document.getElementById('reminder-toggle');
+      if (reminderToggle) {
+        reminderToggle.addEventListener('change', function(e) {
+          config.reminderEnabled = e.target.checked;
+        });
+      }
+
+      // 频率滑块
+      const frequencySlider = document.getElementById('frequency-slider');
+      if (frequencySlider) {
+        frequencySlider.addEventListener('click', updateFrequency);
+      }
+
+      // 发送时间选择
+      const sendTimeSelect = document.getElementById('send-time-select');
+      if (sendTimeSelect) {
+        sendTimeSelect.addEventListener('change', function(e) {
+          config.sendTime = e.target.value;
+          const tip = document.getElementById('send-time-tip');
+          if (tip) {
+            tip.textContent = `✅ 周报将在每周五 ${config.sendTime} 自动生成并发送`;
+          }
+        });
+      }
+
+      // 保存配置按钮
+      const saveBtn = document.getElementById('save-config-btn');
+      if (saveBtn) {
+        saveBtn.addEventListener('click', saveConfig);
+      }
+
+      // 复制按钮
+      const copyBtn = document.getElementById('copy-btn');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', function() {
+          copySummary(reports[currentRole].summary);
+        });
+      }
+
+      // PDF按钮
+      const pdfBtn = document.getElementById('pdf-btn');
+      if (pdfBtn) {
+        pdfBtn.addEventListener('click', exportPDF);
+      }
+
+      // 图片按钮
+      const imageBtn = document.getElementById('image-btn');
+      if (imageBtn) {
+        imageBtn.addEventListener('click', exportImage);
+      }
+
+      // 预览按钮
+      const previewBtn = document.querySelector('.preview-btn');
+      if (previewBtn) {
+        previewBtn.addEventListener('click', openPreview);
+      }
+    }
+
+    function updateFrequency(event) {
+      const track = event.currentTarget;
+      const rect = track.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const percent = x / rect.width;
+      config.reminderFrequency = Math.max(1, Math.min(4, Math.round(percent * 4)));
+      document.getElementById('frequency-display').textContent = `${config.reminderFrequency} 次/周`;
+      document.getElementById('frequency-fill').style.width = `${config.reminderFrequency * 25}%`;
+      document.getElementById('frequency-thumb').style.left = `${config.reminderFrequency * 25}%`;
+    }
+
+    function renderPreviewButton() {
+      return `<button class="preview-btn">📤 预览发送</button>`;
+    }
+
+    function renderPreviewModal(report) {
+      const decisions = report.decisions.map(d => {
+        const config = getTypeConfig(d.type);
+        return `
+          <div style="padding: 12px; background: #fafafa; border-radius: 8px; border-left: 4px solid ${config.color}; margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span style="font-weight: 500;">${d.title}</span>
+              <span style="font-size: 12px; padding: 2px 8px; border-radius: 4px; background: ${config.bgColor}; color: ${config.color}">${config.emoji} ${config.text}</span>
+            </div>
+            <p style="font-size: 13px; color: #595959;">${d.description}</p>
+            ${d.aiSuggestion ? `<p style="font-size: 12px; color: #ad6800; background: #fef9e6; padding: 6px; border-radius: 4px; margin-top: 8px;">💡 ${d.aiSuggestion}</p>` : ''}
+          </div>
+        `;
+      }).join('');
+
+      const projects = report.projects.map(p => {
+        const color = getStatusColor(p.status);
+        return `
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+            <span>${getStatusEmoji(p.status)}</span>
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>${p.name}</span>
+                <span style="color: ${color}">${p.progress}%</span>
+              </div>
+              <div style="height: 6px; background: #e8e8e8; border-radius: 3px; overflow: hidden;">
+                <div style="height: 100%; width: ${p.progress}%; background: ${color}; border-radius: 3px;"></div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const alerts = report.alerts.map(a => {
+        const config = getPriorityConfig(a.priority);
+        return `
+          <div style="padding: 12px; background: ${config.bgColor}; border-radius: 8px; border-left: 4px solid ${config.borderColor}; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+              <span style="color: ${config.color}; font-weight: 500;">${config.emoji}${config.text}</span>
+              <span style="font-weight: 500;">${a.title}</span>
+            </div>
+            <p style="font-size: 13px; color: #595959;">${a.description}</p>
+            <p style="font-size: 12px; color: #8c8c8c;">📅 ${a.date}</p>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="modal-overlay">
+          <div class="modal-content">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 24px; margin-bottom: 20px; color: white;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <h2 style="font-size: 20px; margin-bottom: 4px;">📊 智能周报提醒工具</h2>
+                  <p style="opacity: 0.9; font-size: 13px;">${report.userName} | ${report.userTitle} | 2026年第${report.weekNumber}周</p>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button style="padding: 8px 16px; border: none; border-radius: 6px; background: rgba(255,255,255,0.2); color: white; cursor: pointer;" data-modal-action="copy">📋 复制</button>
+                  <button style="padding: 8px 16px; border: none; border-radius: 6px; background: rgba(255,255,255,0.2); color: white; cursor: pointer;" data-modal-action="pdf">📄 PDF</button>
+                  <button style="padding: 8px 16px; border: none; border-radius: 6px; background: rgba(255,255,255,0.2); color: white; cursor: pointer;" data-modal-action="image">🖼️ 图片</button>
+                </div>
+              </div>
+            </div>
+
+            <div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+              <h3 style="color: #1890ff; margin-bottom: 12px;">📝 本周总览</h3>
+              <p style="line-height: 1.8; color: #333;">${report.summary}</p>
+            </div>
+
+            <div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+              <h3 style="color: #1890ff; margin-bottom: 12px;">✅ 决策清单</h3>
+              ${decisions}
+            </div>
+
+            <div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+              <h3 style="color: #1890ff; margin-bottom: 12px;">📊 项目进展</h3>
+              ${projects}
+            </div>
+
+            <div style="background: white; border-radius: 12px; padding: 20px;">
+              <h3 style="color: #1890ff; margin-bottom: 12px;">🔭 下周预警</h3>
+              ${alerts}
+            </div>
+
+            <div class="modal-footer">
+              <button class="btn btn-secondary">取消</button>
+              <button class="btn btn-primary">发送周报</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderApp(report) {
+      return `
+        ${renderHeader(report)}
+        ${renderWeeklySummary(report)}
+        <div class="content-layout">
+          <div>
+            ${renderNextWeekAlert(report)}
+            ${renderBusinessHealth(report)}
+          </div>
+          <div>
+            ${renderDecisionList(report)}
+            ${renderTeamDynamics(report)}
+          </div>
+        </div>
+        ${renderConfigPanel()}
+        ${renderPreviewButton()}
+      `;
+    }
+
+    function copySummary(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('已复制到剪贴板！');
+      });
+    }
+
+    function exportPDF() {
+      window.print();
+      showToast('打印窗口已打开，请选择"另存为PDF"保存。');
+    }
+
+    function exportImage() {
+      showToast('图片导出功能即将上线！');
+    }
+
+    function changeRole(role) {
+      currentRole = role;
+      document.getElementById('root').innerHTML = '<div class="loading-container"><div class="loading-spinner"></div><p>正在生成周报...</p></div>';
+      setTimeout(() => {
+        document.getElementById('root').innerHTML = renderApp(reports[role]);
+        setTimeout(setupEventListeners, 100);
+      }, 500);
+    }
+
+    function openPreview() {
+      const previewHTML = renderPreviewModal(reports[currentRole]);
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = previewHTML;
+      document.body.appendChild(tempDiv.firstElementChild);
+      
+      // 设置预览弹窗的事件监听器
+      setTimeout(() => {
+        // 复制按钮
+        const modalCopyBtn = document.querySelector('.modal-overlay [data-modal-action="copy"]');
+        if (modalCopyBtn) {
+          modalCopyBtn.addEventListener('click', function() {
+            copySummary(reports[currentRole].summary);
+          });
+        }
+        
+        // PDF按钮
+        const modalPdfBtn = document.querySelector('.modal-overlay [data-modal-action="pdf"]');
+        if (modalPdfBtn) {
+          modalPdfBtn.addEventListener('click', exportPDF);
+        }
+        
+        // 图片按钮
+        const modalImageBtn = document.querySelector('.modal-overlay [data-modal-action="image"]');
+        if (modalImageBtn) {
+          modalImageBtn.addEventListener('click', exportImage);
+        }
+        
+        // 取消按钮
+        const modalCancelBtn = document.querySelector('.modal-overlay .btn-secondary');
+        if (modalCancelBtn) {
+          modalCancelBtn.addEventListener('click', closePreview);
+        }
+        
+        // 发送按钮
+        const modalSendBtn = document.querySelector('.modal-overlay .btn-primary');
+        if (modalSendBtn) {
+          modalSendBtn.addEventListener('click', sendReport);
+        }
+        
+        // 遮罩点击关闭
+        const modalOverlay = document.querySelector('.modal-overlay');
+        if (modalOverlay) {
+          modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) {
+              closePreview();
+            }
+          });
+        }
+      }, 50);
+    }
+
+    function closePreview() {
+      document.querySelector('.modal-overlay')?.remove();
+    }
+
+    function sendReport() {
+      showToast('周报已发送！');
+      closePreview();
+    }
+
+    loadConfig();
+    setTimeout(() => {
+      document.getElementById('root').innerHTML = renderApp(reports[currentRole]);
+      // 延迟设置事件监听器，确保DOM已渲染
+      setTimeout(setupEventListeners, 100);
+    }, 1000);
+  </script>
+</body>
+</html>
