@@ -194,6 +194,29 @@
   width: 100%;
 }
 
+.api-config {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.api-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.data-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.history-section,
+.datamgmt-section {
+  max-width: 100%;
+}
+
 @media (max-width: 900px) {
   .manage-content {
     flex-direction: column;
