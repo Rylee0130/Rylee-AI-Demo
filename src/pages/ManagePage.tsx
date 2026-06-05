@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { RootState, useAppDispatch } from '@/store/store';
 import { switchUserLevel, regenerateReport, updateDataSource, updatePushChannel, updateSchedule, updateCalendar } from '@/store/reportSlice';
 import { UserLevel, AppConfig } from '@/types';
-import { Button, Card, Switch, Select, Slider, Space, Typography, Table, Input, Tag, message } from 'antd';
+import { Button, Card, Switch, Select, Slider, Space, Typography, Table, Input, InputNumber, Tag, message } from 'antd';
 import TeamDynamics from '@/components/TeamDynamics';
 import './ManagePage.css';
 
@@ -288,9 +288,9 @@ function ManagePage() {
                   </div>
                   <div className="config-item">
                     <span>请求超时(ms)</span>
-                    <Input.Number 
+                    <InputNumber 
                       value={apiConfig.timeout} 
-                      onChange={(value) => setApiConfig(prev => ({ ...prev, timeout: value || 0 }))}
+                      onChange={(value: number | null) => setApiConfig(prev => ({ ...prev, timeout: value || 0 }))}
                       style={{ width: 150 }}
                       min={1000}
                       max={60000}

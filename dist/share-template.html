@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>周报分享页面</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #f0f2f5;
+      padding: 40px;
+      line-height: 1.6;
+    }
+    .container { 
+      max-width: 900px; 
+      margin: 0 auto; 
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 16px;
+      padding: 40px;
+      margin-bottom: 24px;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .header h1 { font-size: 28px; margin-bottom: 16px; font-weight: 600; }
+    .date { font-size: 14px; opacity: 0.9; }
+    .summary-box {
+      background: rgba(255,255,255,0.15);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+    .user-info { font-size: 14px; opacity: 0.9; margin-bottom: 8px; }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .card-title {
+      color: #1890ff;
+      font-size: 20px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #e6f7ff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .item {
+      padding: 16px;
+      background: #fafafa;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      border-left: 4px solid #1890ff;
+    }
+    .item:last-child { margin-bottom: 0; }
+    .tag {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-right: 12px;
+    }
+    .tag-action { background: #fff1f0; color: #f5222d; }
+    .tag-decision { background: #fffbe6; color: #faad14; }
+    .tag-inform { background: #e6f7ff; color: #1890ff; }
+    .tag-high { background: #fff2f0; color: #f5222d; }
+    .tag-medium { background: #fffbe6; color: #faad14; }
+    .tag-low { background: #f6ffed; color: #52c41a; }
+    .item-title { font-size: 16px; font-weight: 500; color: #262626; }
+    .item-desc { color: #8c8c8c; font-size: 14px; margin: 8px 0; }
+    .ai-tip { background: #fef9e6; padding: 12px; border-radius: 6px; font-size: 13px; color: #ad6800; margin-top: 8px; }
+    .status-grid { display: flex; gap: 16px; margin-bottom: 20px; }
+    .status-box {
+      flex: 1;
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .status-emoji { font-size: 24px; margin-bottom: 8px; }
+    .status-label { font-size: 14px; color: #595959; }
+    .project-item {
+      display: flex;
+      align-items: center;
+      padding: 12px;
+      background: #fafafa;
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+    .project-item:last-child { margin-bottom: 0; }
+    .project-name { flex: 1; font-size: 14px; font-weight: 500; color: #262626; margin-left: 12px; }
+    .project-progress { font-size: 14px; font-weight: 500; }
+    .team-section { margin-bottom: 20px; }
+    .team-section:last-child { margin-bottom: 0; }
+    .team-section h4 { font-size: 16px; color: #595959; margin-bottom: 12px; }
+    .member-item { padding: 12px; background: #fafafa; border-radius: 6px; margin-bottom: 8px; font-size: 14px; color: #595959; }
+    .member-item:last-child { margin-bottom: 0; }
+    .warning-tag { 
+      background: #fffbe6; 
+      color: #fa8c16; 
+      font-size: 12px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-left: 8px;
+    }
+    .alert-item { padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid; }
+    .alert-item:last-child { margin-bottom: 0; }
+    .alert-title { font-size: 16px; font-weight: 500; color: #262626; margin-left: 12px; }
+    .alert-desc { color: #595959; font-size: 14px; margin: 8px 0; }
+    .alert-date { font-size: 12px; color: #8c8c8c; }
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      padding: 20px;
+      color: #8c8c8c;
+      font-size: 12px;
+    }
+    @media print {
+      body { background: white; padding: 20px; }
+      .container { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📊 智能周报</h1>
+      <div class="date">📅 请在智能周报工具中生成周报内容</div>
+      <div class="summary-box">
+        <div class="user-info">👤 未知用户 · 未知角色</div>
+        <p>请使用智能周报提醒工具生成本周周报，然后通过"分享链接"或"下载网页版"功能获取可分享的周报页面。</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📋 使用说明</div>
+      <div class="item">
+        <p class="item-desc">
+          1. 打开智能周报提醒工具<br>
+          2. 生成您的周报内容<br>
+          3. 点击"预览发送"按钮<br>
+          4. 选择"分享链接"或"下载网页版"<br>
+          5. 将下载的HTML文件发送给同事
+        </p>
+      </div>
+      <div class="item" style="border-left-color: #52c41a;">
+        <p class="item-desc">
+          💡 提示：下载的网页版周报包含完整样式，可以直接在浏览器中打开，无需网络连接即可查看。
+        </p>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>本周报由智能周报提醒工具自动生成</p>
+      <p>生成时间: <span id="current-time"></span></p>
+    </div>
+  </div>
+  <script>
+    document.getElementById('current-time').textContent = new Date().toLocaleString('zh-CN');
+  </script>
+</body>
+</html>
