@@ -50,8 +50,8 @@ function UserPage() {
           </div>
         </div>
         <div className="nav-links">
-          <a href="/" className="active">📋 周报</a>
-          <a href="/manage">⚙️ 管理后台</a>
+          <a href="#/" className="active">📋 周报</a>
+          <a href="#/manage">⚙️ 管理后台</a>
         </div>
       </header>
 

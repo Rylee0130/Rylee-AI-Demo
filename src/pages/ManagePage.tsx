@@ -152,7 +152,7 @@ function ManagePage() {
               options={levelOptions}
             />
             <Button onClick={handleRegenerate}>🔄 重新生成</Button>
-            <a href="/" className="back-link">📋 返回用户端</a>
+            <a href="#/" className="back-link">📋 返回用户端</a>
           </Space>
         </div>
       </header>
